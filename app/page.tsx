@@ -96,7 +96,7 @@ export default function HomePage() {
           </div>
 
           {/* Stats Section */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 p-8 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl">
+          {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mt-20 p-8 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl">
             <div className="text-center">
               <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">10K+</div>
               <div className="text-gray-600 dark:text-gray-300">Tasks Completed</div>
@@ -106,14 +106,14 @@ export default function HomePage() {
               <div className="text-gray-600 dark:text-gray-300">Active Projects</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">1K+</div>
+              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2"></div>
               <div className="text-gray-600 dark:text-gray-300">Happy Users</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">99%</div>
               <div className="text-gray-600 dark:text-gray-300">Uptime</div>
             </div>
-          </div>
+          </div> */}
         </div>
       </main>
     </div>
