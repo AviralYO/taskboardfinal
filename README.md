@@ -2,7 +2,6 @@
 
 A modern, responsive task management application built with React, Next.js, and TypeScript. Streamline your workflow, organize projects, and boost productivity with an intuitive interface.
 
-![TaskFlow Dashboard](https://via.placeholder.com/800x400/3b82f6/ffffff?text=TaskFlow+Dashboard)
 
 ## ✨ Features
 
