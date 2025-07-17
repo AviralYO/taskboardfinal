@@ -74,3 +74,33 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+@font-face {
+  font-family: 'Compressa VF';
+  src: url('https://res.cloudinary.com/dr6lvwubh/raw/upload/v1529908256/CompressaPRO-GX.woff2');
+  font-style: normal;
+}
+
+.flex {
+  display: flex;
+  justify-content: space-between;
+}
+
+.stroke span {
+  position: relative;
+  color: #fff;
+}
+.stroke span::after {
+  content: attr(data-char);
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: transparent;
+  z-index: -1;
+  -webkit-text-stroke-width: 2px;
+  -webkit-text-stroke-color: #7c3aed;
+}
+
+.text-pressure-title {
+  color: #fff;
+}

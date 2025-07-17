@@ -1,41 +1,48 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, ArrowLeft, FolderOpen, Trash2, Edit, Palette } from "lucide-react"
 import Link from "next/link"
 import { ProjectDialog } from "@/components/project-dialog"
-import { useLocalStorage } from "@/hooks/use-local-storage"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { useSession } from "next-auth/react";
 
 interface Project {
   id: string
   name: string
   description: string
   color: string
-  createdAt: string
-}
-
-interface Task {
-  id: string
-  title: string
-  description: string
-  priority: "High" | "Medium" | "Low"
-  status: "To Do" | "In Progress" | "Done"
-  assignee: string
-  dueDate?: string
-  projectId: string
-  createdAt: string
+  created_at: string
+  user_id: string
 }
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useLocalStorage<Project[]>("projects", [])
-  const [tasks, setTasks] = useLocalStorage<Task[]>("tasks", [])
+  const { data: session, status } = useSession();
+  const [projects, setProjects] = useState<Project[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  // Fetch projects from MongoDB API
+  useEffect(() => {
+    if (!session) {
+      setProjects([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    fetch("/api/projects")
+      .then((res) => res.json())
+      .then((data) => {
+        setProjects(data || []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [isProjectDialogOpen, session])
 
   const filteredProjects = projects.filter(
     (project) =>
@@ -43,42 +50,58 @@ export default function ProjectsPage() {
       project.description.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const getProjectStats = (projectId: string) => {
-    const projectTasks = tasks.filter((task) => task.projectId === projectId)
-    const completedTasks = projectTasks.filter((task) => task.status === "Done").length
-    const totalTasks = projectTasks.length
+  // Dummy stats for now (replace with real task stats if you connect tasks)
+  const getProjectStats = (_projectId: string) => ({
+    total: 0,
+    completed: 0,
+    inProgress: 0,
+    todo: 0,
+    progress: 0,
+  })
 
-    return {
-      total: totalTasks,
-      completed: completedTasks,
-      inProgress: projectTasks.filter((task) => task.status === "In Progress").length,
-      todo: projectTasks.filter((task) => task.status === "To Do").length,
-      progress: totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0,
+  const handleCreateProject = async (projectData: Omit<Project, "id" | "created_at" | "user_id">) => {
+    if (!session) return;
+    const res = await fetch("/api/projects", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(projectData),
+    });
+    if (res.ok) {
+      setIsProjectDialogOpen(false);
     }
   }
 
-  const handleCreateProject = (projectData: Omit<Project, "id" | "createdAt">) => {
-    const newProject: Project = {
-      ...projectData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
+  const handleUpdateProject = async (projectData: Omit<Project, "id" | "created_at" | "user_id">) => {
+    if (!editingProject || !session) return;
+    const res = await fetch("/api/projects", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: editingProject.id, ...projectData }),
+    });
+    if (res.ok) {
+      setIsProjectDialogOpen(false);
+      setEditingProject(null);
     }
-    setProjects((prev) => [...prev, newProject])
   }
 
-  const handleUpdateProject = (projectData: Omit<Project, "id" | "createdAt">) => {
-    if (!editingProject) return
-
-    setProjects((prev) =>
-      prev.map((project) => (project.id === editingProject.id ? { ...project, ...projectData } : project)),
-    )
-    setEditingProject(null)
+  const handleDeleteProject = async (projectId: string) => {
+    if (!session) return;
+    const res = await fetch("/api/projects", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: projectId }),
+    });
+    if (res.ok) {
+      setProjects((prev) => prev.filter((project) => project.id !== projectId));
+    }
   }
 
-  const handleDeleteProject = (projectId: string) => {
-    setProjects((prev) => prev.filter((project) => project.id !== projectId))
-    // Also delete all tasks associated with this project
-    setTasks((prev) => prev.filter((task) => task.projectId !== projectId))
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen text-xl">Loading...</div>
+  }
+
+  if (!session) {
+    return <div className="flex flex-col items-center justify-center min-h-screen text-xl">Please log in to view your projects.</div>
   }
 
   return (
@@ -223,7 +246,7 @@ export default function ProjectsPage() {
 
                     <div className="mt-4 pt-4 border-t">
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Created {new Date(project.createdAt).toLocaleDateString()}
+                        Created {new Date(project.created_at).toLocaleDateString()}
                       </div>
                     </div>
                   </CardContent>
